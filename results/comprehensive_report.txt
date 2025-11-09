@@ -1,0 +1,55 @@
+================================================================================
+REPORTE COMPLETO: ANALISIS TEORICO VS EXPERIMENTAL
+KNN Paralelo con MPI
+================================================================================
+
+1. PARAMETROS DEL EXPERIMENTO
+   Dataset: MNIST digits
+   Muestras entrenamiento (n): 1437
+   Muestras test (m): 360
+   Features (d): 64
+   k-vecinos: 3
+   Tiempo secuencial base: 1.5669 s
+
+2. MODELO TEORICO NORMALIZADO
+   Complejidad secuencial: T_seq = O(m * n * d)
+   Complejidad paralela: T_par(p) = T_compute(p) + T_comm(p)
+   
+   T_compute(p) = (m * n * d / p) * t_op
+   T_comm(p) = alpha * log2(p) + beta * (n*d + m/p)
+   
+   Parametros normalizados:
+     t_op = T_seq/(m*n*d) = 4.73e-08 s/operacion
+     alpha (sincronizacion) = 1.00e-03 s
+     beta (transferencia) = 1.00e-06 s/byte
+
+3. RESULTADOS EXPERIMENTALES
+   p      T_medido     T_teorico    Error      Speedup    Efic(%)
+   ----------------------------------------------------------------------
+   1      1.5827       1.6592       4.84       1.02       101.7
+   2      0.8489       0.8766       3.27       1.90       94.9
+   4      0.4669       0.4858       4.05       3.45       86.2
+   8      0.6283       0.2909       53.70      2.56       32.0
+
+4. ANALISIS DE ESCALABILIDAD
+   Tipo: Strong Scaling (problema fijo, variar p)
+   Speedup maximo alcanzado: 3.45x
+   Eficiencia maxima: 101.7%
+   Cantidad optima de procesos: p = 4
+   
+   Criterio de optimalidad:
+     - Maximizar Speedup/Costo
+     - Mantener eficiencia > 80%
+     - Minimizar tiempo total
+
+5. VALIDACION DEL MODELO
+   Error relativo promedio: 16.47%
+   Error relativo maximo: 53.70%
+   Error relativo minimo: 3.27%
+   Conclusion: Modelo teorico se ajusta RAZONABLEMENTE
+
+6. OBSERVACIONES
+   ALERTA: p=8 tiene 72.0% de overhead de comunicacion
+   ALERTA: p=8 tiene eficiencia critica (32.0%)
+
+================================================================================
