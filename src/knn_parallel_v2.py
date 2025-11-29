@@ -4,23 +4,12 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 import numpy as np
 
+# Distancia euclidiana entre dos puntos
 def euclidean_distance(a, b):
-    """Calcula la distancia euclidiana entre dos puntos"""
     return np.sqrt(np.sum((a - b) ** 2))
 
+# Predicción de clase de un punto usando KNN
 def knn_predict(test_point, X_train, y_train, k):
-    """
-    Predice la clase de un punto de test usando KNN
-    
-    Args:
-        test_point: punto a clasificar
-        X_train: conjunto de entrenamiento
-        y_train: etiquetas de entrenamiento
-        k: numero de vecinos a considerar
-    
-    Returns:
-        clase predicha
-    """
     distances = [euclidean_distance(test_point, x) for x in X_train]
     k_indices = np.argsort(distances)[:k]
     k_labels = [y_train[i] for i in k_indices]

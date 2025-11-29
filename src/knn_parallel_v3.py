@@ -5,53 +5,23 @@ from collections import Counter
 import numpy as np
 import sys
 
+# Distancia euclidiana entre dos puntos
 def euclidean_distance(a, b):
-    """Calcula la distancia euclidiana entre dos puntos"""
     return np.sqrt(np.sum((a - b) ** 2))
 
+# Predicción de clase de un punto usando KNN
 def knn_predict(test_point, X_train, y_train, k):
-    """
-    Predice la clase de un punto de test usando KNN
-    
-    Args:
-        test_point: punto a clasificar
-        X_train: conjunto de entrenamiento
-        y_train: etiquetas de entrenamiento
-        k: numero de vecinos a considerar
-    
-    Returns:
-        clase predicha
-    """
     distances = [euclidean_distance(test_point, x) for x in X_train]
     k_indices = np.argsort(distances)[:k]
     k_labels = [y_train[i] for i in k_indices]
     most_common = Counter(k_labels).most_common(1)
     return most_common[0][0]
 
+# Calcula FLOPs de region paralelizable: sqrt(sum((a-b)^2)
 def calculate_flops(m_test, n_train, d):
-    """
-    Calcula FLOPs para la region paralelizable
-    
-    Por distancia euclidiana: sqrt(sum((a-b)^2))
-    - Resta: d ops
-    - Cuadrado: d ops
-    - Suma: d ops
-    - Raiz: 1 op
-    Total: ~3d FLOPs por distancia
-    
-    Args:
-        m_test: numero de puntos de test
-        n_train: numero de puntos de entrenamiento
-        d: numero de features
-    
-    Returns:
-        total de FLOPs
-    """
     flops_per_distance = 3 * d
     total_distances = m_test * n_train
-    total_flops = total_distances * flops_per_distance
-    return total_flops
-
+    return total_distances * flops_per_distance
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -63,7 +33,7 @@ quiet_mode = '--quiet' in sys.argv
 # Iniciar medicion de tiempo total
 t_total_start = MPI.Wtime()
 
-# Inicializacion en rank 0: cargar y preparar datos
+# Inicializacion en rank 0: carga de datos
 if rank == 0:
     if not quiet_mode:
         print(f"KNN PARALLEL - BETA 3: Optimized with FLOPs Analysis")
@@ -71,9 +41,7 @@ if rank == 0:
         print(f"Loading MNIST digits dataset...")
     
     digits = load_digits()
-    X_train, X_test, y_train, y_test = train_test_split(
-        digits.data, digits.target, test_size=0.2, random_state=42
-    )
+    X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
     
     m_test = X_test.shape[0]
     n_train = X_train.shape[0]
@@ -121,14 +89,11 @@ t_scatter_end = MPI.Wtime()
 t_scatter = t_scatter_end - t_scatter_start
 
 if rank == 0 and not quiet_mode:
-    print(f"\nStarting parallel computation...")
+    print(f"\nStarting parallel computation...\n")
 
 # Fase 3: Computo local
 t_compute_start = MPI.Wtime()
-local_predictions = []
-for test_point in local_X_test:
-    pred = knn_predict(test_point, X_train, y_train, k)
-    local_predictions.append(pred)
+local_predictions = [knn_predict(x, X_train, y_train, k) for x in local_X_test]
 t_compute_end = MPI.Wtime()
 t_compute_local = t_compute_end - t_compute_start
 
@@ -148,9 +113,8 @@ t_compute_max = comm.reduce(t_compute_local, op=MPI.MAX, root=0)
 t_compute_min = comm.reduce(t_compute_local, op=MPI.MIN, root=0)
 t_compute_sum = comm.reduce(t_compute_local, op=MPI.SUM, root=0)
 
-# Evaluacion y reporte final en rank 0
+# Evaluacion y reporte en rank 0
 if rank == 0:
-    # Aplanar listas
     y_pred = []
     for sublist in all_predictions:
         y_pred.extend(sublist)
@@ -188,8 +152,13 @@ if rank == 0:
     else:
         print(f"RESULTS - ACCURACY")
         print(f"Accuracy: {accuracy:.4f}")
-        print(f"Correct predictions: {np.sum(y_pred == y_true)}/{len(y_true)}")
+        print(f"Total Samples: {len(y_true)}")
+        print(f"Correct predictions: {np.sum(y_pred == y_true)}")
        
+        print(f"Speedup: {speedup:.4f}, Efficiency: {efficiency:.4f}")
+        print(f"Total FLOPs: {total_flops}, GFLOPs/s: {gflops_per_sec:.4f}")
+
+        print()
         print("Sample predictions (first 10):")
         print("Predicted:", y_pred[:10])
         print("True:     ", y_true[:10])
