@@ -6,7 +6,7 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results')
 
-def load_results(filename='benchmark_results.json'):
+def load_results(filename='benchmark_strong_scaling.json'):
     """Carga los resultados del benchmark desde results/ por defecto"""
     if not os.path.isabs(filename):
         filename = os.path.join(RESULTS_DIR, filename)

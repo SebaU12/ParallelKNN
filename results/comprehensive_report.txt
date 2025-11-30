@@ -9,7 +9,7 @@ KNN Paralelo con MPI
    Muestras test (m): 360
    Features (d): 64
    k-vecinos: 3
-   Tiempo secuencial base: 1.5669 s
+   Tiempo secuencial base: 2.2982 s
 
 2. MODELO TEORICO NORMALIZADO
    Complejidad secuencial: T_seq = O(m * n * d)
@@ -19,23 +19,24 @@ KNN Paralelo con MPI
    T_comm(p) = alpha * log2(p) + beta * (n*d + m/p)
    
    Parametros normalizados:
-     t_op = T_seq/(m*n*d) = 4.73e-08 s/operacion
+     t_op = T_seq/(m*n*d) = 6.94e-08 s/operacion
      alpha (sincronizacion) = 1.00e-03 s
      beta (transferencia) = 1.00e-06 s/byte
 
 3. RESULTADOS EXPERIMENTALES
    p      T_medido     T_teorico    Error      Speedup    Efic(%)
    ----------------------------------------------------------------------
-   1      1.5827       1.6592       4.84       1.02       101.7
-   2      0.8489       0.8766       3.27       1.90       94.9
-   4      0.4669       0.4858       4.05       3.45       86.2
-   8      0.6283       0.2909       53.70      2.56       32.0
+   1      4187.6192    2.3905       99.94      0.00       0.0
+   2      2242.9534    1.2422       99.94      0.00       0.0
+   4      1788.5713    0.6686       99.96      0.00       0.0
+   8      921.2913     0.3823       99.96      0.00       0.0
+   16     421.0078     0.2396       99.94      0.00       0.0
 
 4. ANALISIS DE ESCALABILIDAD
    Tipo: Strong Scaling (problema fijo, variar p)
-   Speedup maximo alcanzado: 3.45x
-   Eficiencia maxima: 101.7%
-   Cantidad optima de procesos: p = 4
+   Speedup maximo alcanzado: 0.00x
+   Eficiencia maxima: 0.0%
+   Cantidad optima de procesos: p = 16
    
    Criterio de optimalidad:
      - Maximizar Speedup/Costo
@@ -43,13 +44,16 @@ KNN Paralelo con MPI
      - Minimizar tiempo total
 
 5. VALIDACION DEL MODELO
-   Error relativo promedio: 16.47%
-   Error relativo maximo: 53.70%
-   Error relativo minimo: 3.27%
-   Conclusion: Modelo teorico se ajusta RAZONABLEMENTE
+   Error relativo promedio: 99.95%
+   Error relativo maximo: 99.96%
+   Error relativo minimo: 99.94%
+   Conclusion: Modelo teorico requiere refinamiento
 
 6. OBSERVACIONES
-   ALERTA: p=8 tiene 72.0% de overhead de comunicacion
-   ALERTA: p=8 tiene eficiencia critica (32.0%)
+   ALERTA: p=1 tiene eficiencia critica (0.0%)
+   ALERTA: p=2 tiene eficiencia critica (0.0%)
+   ALERTA: p=4 tiene eficiencia critica (0.0%)
+   ALERTA: p=8 tiene eficiencia critica (0.0%)
+   ALERTA: p=16 tiene eficiencia critica (0.0%)
 
 ================================================================================
