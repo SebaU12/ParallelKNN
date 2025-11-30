@@ -10,19 +10,8 @@ RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results')
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-
+# Ejecuta experimentos - dataset_size: 'full', 'half', 'double'
 def run_experiment(num_processes, dataset_size='full', repetitions=3):
-    """
-    Ejecuta el experimento con un numero dado de procesos
-    
-    Args:
-        num_processes: numero de procesos MPI
-        dataset_size: 'full', 'half', 'double'
-        repetitions: numero de repeticiones para promediar
-    
-    Returns:
-        diccionario con resultados promediados
-    """
     results = []
     
     for rep in range(repetitions):
@@ -62,19 +51,11 @@ def run_experiment(num_processes, dataset_size='full', repetitions=3):
     
     return avg_result
 
-
+# Calcular tiempo teorico basado en complejidad
+# T_comm = alpha * log(p) + beta * (n*d + m/p)
+# T_compute = (m/p * n * d) * t_op
 def calculate_theoretical_time(m, n, d, p, t_seq_base):
-    """
-    Calcula el tiempo teorico basado en la complejidad
-    
-    T_par = T_comm + T_compute
-    T_comm = alpha * log(p) + beta * (n*d + m/p)
-    T_compute = (m/p * n * d) * t_op
-    
-    Donde t_op es el tiempo por operacion individual
-    """
     t_op = t_seq_base / (m * n * d)
-    
     t_compute = (m / p) * n * d * t_op
     
     alpha = 1e-5

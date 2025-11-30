@@ -1,9 +1,13 @@
 from mpi4py import MPI
 from sklearn.datasets import load_digits
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from collections import Counter
 import numpy as np
 import sys
+
+def log(msg):
+    print(f"[P{rank}] {msg}", flush=True)
 
 # Distancia euclidiana entre dos puntos
 def euclidean_distance(a, b):
@@ -40,8 +44,14 @@ if rank == 0:
         print(f"Number of processes: {size}")
         print(f"Loading MNIST digits dataset...")
     
-    digits = load_digits()
-    X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
+    # digits = load_digits()
+    # X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
+
+    mnist = fetch_openml('mnist_784', version=1, as_frame=False)
+    x = mnist.data.astype(np.float32)
+    y = mnist.target.astype(np.int64)
+    x /= 255.0
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
     
     m_test = X_test.shape[0]
     n_train = X_train.shape[0]
@@ -57,6 +67,7 @@ if rank == 0:
         X_test_chunks = np.array_split(X_test, size)
         for i in range(size):
             print(f"  Process {i}: {len(X_test_chunks[i])} test samples")
+        print()
     else:
         X_test_chunks = np.array_split(X_test, size)
     
@@ -80,6 +91,7 @@ X_train = comm.bcast(X_train, root=0)
 y_train = comm.bcast(y_train, root=0)
 t_bcast_end = MPI.Wtime()
 t_bcast = t_bcast_end - t_bcast_start
+log("Broadcast completed")
 
 # Fase 2: Scatter
 t_scatter_start = MPI.Wtime()
@@ -96,12 +108,14 @@ t_compute_start = MPI.Wtime()
 local_predictions = [knn_predict(x, X_train, y_train, k) for x in local_X_test]
 t_compute_end = MPI.Wtime()
 t_compute_local = t_compute_end - t_compute_start
+log(f"Finished compute in {t_compute_local:.3f}s")
 
 # Fase 4: Gather
 t_gather_start = MPI.Wtime()
 all_predictions = comm.gather(local_predictions, root=0)
 all_y_test = comm.gather(local_y_test, root=0)
 t_gather_end = MPI.Wtime()
+log("Gather completed")
 t_gather = t_gather_end - t_gather_start
 
 # Fin de medicion de tiempo total
