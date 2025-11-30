@@ -6,8 +6,8 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 RESULTS_DIR = os.path.join(PROJECT_ROOT, 'results')
 
+# Carga del benchmark
 def load_results(filename='benchmark_results.json'):
-    """Carga los resultados del benchmark desde results/ por defecto"""
     if not os.path.isabs(filename):
         filename = os.path.join(RESULTS_DIR, filename)
 
@@ -15,9 +15,8 @@ def load_results(filename='benchmark_results.json'):
         data = json.load(f)
     return data
 
-
+# Tiempo de ejecución vs número de procesos
 def plot_execution_times(data, output_dir='results'):
-    """Grafica tiempos de ejecucion vs numero de procesos"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
@@ -44,8 +43,8 @@ def plot_execution_times(data, output_dir='results'):
     print(f"Saved: {output_dir}/time_vs_processes.png")
     plt.close()
 
+# Speedup vs número de procesos
 def plot_speedup(data, output_dir='results'):
-    """Grafica speedup vs numero de procesos"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
@@ -54,10 +53,8 @@ def plot_speedup(data, output_dir='results'):
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(processes, speedup_measured, 'o-', linewidth=2, markersize=8, 
-            label='Measured Speedup', color='#2E86AB')
-    ax.plot(processes, speedup_ideal, '--', linewidth=2, 
-            label='Ideal Speedup (S=p)', color='#A23B72')
+    ax.plot(processes, speedup_measured, 'o-', linewidth=2, markersize=8, label='Measured Speedup', color='#2E86AB')
+    ax.plot(processes, speedup_ideal, '--', linewidth=2, label='Ideal Speedup (S=p)', color='#A23B72')
     
     ax.set_xlabel('Number of Processes', fontsize=12)
     ax.set_ylabel('Speedup', fontsize=12)
@@ -71,19 +68,17 @@ def plot_speedup(data, output_dir='results'):
     print(f"Saved: {output_dir}/speedup.png")
     plt.close()
 
+# Eficiencia vs número de procesos
 def plot_efficiency(data, output_dir='results'):
-    """Grafica eficiencia vs numero de procesos"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
-    efficiency = [r['efficiency'] * 100 for r in results]  # Convertir a porcentaje
+    efficiency = [r['efficiency'] * 100 for r in results]
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(processes, efficiency, 'o-', linewidth=2, markersize=8, 
-            color='#F18F01', label='Measured Efficiency')
-    ax.axhline(y=100, color='#A23B72', linestyle='--', linewidth=2, 
-               label='Ideal Efficiency (100%)')
+    ax.plot(processes, efficiency, 'o-', linewidth=2, markersize=8, color='#F18F01', label='Measured Efficiency')
+    ax.axhline(y=100, color='#A23B72', linestyle='--', linewidth=2, label='Ideal Efficiency (100%)')
     
     ax.set_xlabel('Number of Processes', fontsize=12)
     ax.set_ylabel('Efficiency (%)', fontsize=12)
@@ -98,8 +93,8 @@ def plot_efficiency(data, output_dir='results'):
     print(f"Saved: {output_dir}/efficiency.png")
     plt.close()
 
+# GFLOPs vs número de procesos
 def plot_flops(data, output_dir='results'):
-    """Grafica GFLOPS vs numero de procesos"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
@@ -123,8 +118,8 @@ def plot_flops(data, output_dir='results'):
     print(f"Saved: {output_dir}/flops_analysis.png")
     plt.close()
 
+# Desglose de tiempos
 def plot_time_breakdown(data, output_dir='results'):
-    """Grafica desglose de tiempos (stacked bar)"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
@@ -161,8 +156,8 @@ def plot_time_breakdown(data, output_dir='results'):
     print(f"Saved: {output_dir}/time_breakdown.png")
     plt.close()
 
+# Porcentaje de tiempo en comm vs compt
 def plot_communication_overhead(data, output_dir='results'):
-    """Grafica porcentaje de tiempo en comunicacion vs computo"""
     results = data['results']
     
     processes = [r['processes'] for r in results]
@@ -190,16 +185,15 @@ def plot_communication_overhead(data, output_dir='results'):
     for bars in [bars1, bars2]:
         for bar in bars:
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{height:.1f}%', ha='center', va='bottom', fontsize=9)
+            ax.text(bar.get_x() + bar.get_width()/2., height, f'{height:.1f}%', ha='center', va='bottom', fontsize=9)
     
     plt.tight_layout()
     plt.savefig(f'{output_dir}/communication_overhead.png', dpi=300, bbox_inches='tight')
     print(f"Saved: {output_dir}/communication_overhead.png")
     plt.close()
 
+# Tabla resumen
 def generate_summary_table(data, output_dir='results'):
-    """Genera una tabla resumen en formato texto"""
     results = data['results']
     metadata = data['metadata']
     
