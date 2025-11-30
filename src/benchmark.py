@@ -73,13 +73,13 @@ def main():
     
     if mode == 'strong':
         print("\nMODE: Strong Scaling (fixed problem size, varying processes)")
-        processes_list = [1, 2, 4, 8]
+        processes_list = [1, 2, 4, 8, 16]
         repetitions = 3
         dataset_sizes = ['full']
         
     elif mode == 'weak':
         print("\nMODE: Weak Scaling (m/p constant, varying both)")
-        processes_list = [1, 2, 4, 8]
+        processes_list = [1, 2, 4, 8, 16]
         repetitions = 3
         dataset_sizes = ['full', 'double', 'quad']
         
@@ -150,11 +150,8 @@ def main():
     optimal_p = analyze_optimal_processes(all_results, t_seq)
     print(f"\nEstimated optimal number of processes: {optimal_p}")
 
+# Estima cantidad optima de procesos en base a eficiencia (E > 80% y mayor speedup)
 def analyze_optimal_processes(results, t_seq):
-    """
-    Estima la cantidad optima de procesos basado en eficiencia
-    Criterio: eficiencia > 80% y maximo speedup
-    """
     best_p = 1
     best_metric = 0
     
