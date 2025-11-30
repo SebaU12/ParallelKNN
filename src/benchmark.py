@@ -73,13 +73,13 @@ def main():
     
     if mode == 'strong':
         print("\nMODE: Strong Scaling (fixed problem size, varying processes)")
-        processes_list = [1, 2, 4, 8]
+        processes_list = [1, 2, 4, 8 , 16]
         repetitions = 3
         dataset_sizes = ['full']
         
     elif mode == 'weak':
         print("\nMODE: Weak Scaling (m/p constant, varying both)")
-        processes_list = [1, 2, 4, 8]
+        processes_list = [1, 2, 4, 8 , 16]
         repetitions = 3
         dataset_sizes = ['full', 'double', 'quad']
         
