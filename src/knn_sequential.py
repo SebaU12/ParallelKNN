@@ -16,9 +16,7 @@ def knn_predict(test_point, X_train, y_train, k):
 
 # Cargar y dividir los datos
 digits = load_digits()
-X_train, X_test, y_train, y_test = train_test_split(
-    digits.data, digits.target, test_size=0.2, random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
 
 # Parámetro
 k = 3
@@ -46,4 +44,3 @@ for i, ax in enumerate(axes.flat):
 plt.suptitle("Sample Predictions (Sequential KNN)")
 plt.tight_layout()
 plt.savefig('predictions.png', dpi=150, bbox_inches='tight')
-# plt.show()

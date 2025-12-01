@@ -47,31 +47,78 @@ if rank == 0:
     # digits = load_digits()
     # X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
 
-    mnist = fetch_openml('mnist_784', version=1, as_frame=False)
-    x = mnist.data.astype(np.float32)
-    y = mnist.target.astype(np.int64)
-    x /= 255.0
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    # 70000 muestras
+    # mnist = fetch_openml('mnist_784', version=1, as_frame=False)
+    # x = mnist.data.astype(np.float32)
+    # y = mnist.target.astype(np.int64)
+    # x /= 255.0
+    # X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
     
+    size_arg = None
+    for i, v in enumerate(sys.argv):
+        if v == "--size" and i + 1 < len(sys.argv):
+            size_arg = sys.argv[i + 1].lower()
+
+    if not quiet_mode:
+        print(f"KNN PARALLEL - dataset size mode: {size_arg}")
+
+    # ---- Load MNIST ----
+    mnist = fetch_openml('mnist_784', version=1, as_frame=False)
+    x = mnist.data.astype(np.float32) / 255.0
+    y = mnist.target.astype(np.int64)
+
+    # Base split
+    X_train_full, X_test_full, y_train_full, y_test_full = train_test_split(x, y, test_size=0.2, random_state=42)
+
+    # ---- SIZE MODES ----
+    if size_arg == "quarter":
+        N = len(X_train_full) // 4
+        X_train = X_train_full[:N]
+        y_train = y_train_full[:N]
+        X_test = X_test_full[:N]
+        y_test = y_test_full[:N]
+
+    elif size_arg == "half":
+        N = len(X_train_full) // 2
+        X_train = X_train_full[:N]
+        y_train = y_train_full[:N]
+        X_test = X_test_full[:N]
+        y_test = y_test_full[:N]
+
+    elif size_arg == "full" or size_arg is None:
+        X_train = X_train_full
+        y_train = y_train_full
+        X_test = X_test_full
+        y_test = y_test_full
+
+    elif size_arg == "double":
+        X_train = np.tile(X_train_full, (2, 1))
+        y_train = np.tile(y_train_full, 2)
+        X_test = np.tile(X_test_full, (2, 1))
+        y_test = np.tile(y_test_full, 2)
+
+    else:
+        print(f"Invalid size '{size_arg}'")
+        sys.exit(1)
+
     m_test = X_test.shape[0]
     n_train = X_train.shape[0]
     d = X_train.shape[1]
-    
+
+    X_test_chunks = np.array_split(X_test, size)
+    y_test_chunks = np.array_split(y_test, size)
+
     if not quiet_mode:
         print(f"Training samples: {n_train}")
         print(f"Test samples: {m_test}")
         print(f"Features: {d}")
         print(f"k = {k}")
-        
         print(f"\nDistributing data among {size} processes...")
-        X_test_chunks = np.array_split(X_test, size)
+
         for i in range(size):
             print(f"  Process {i}: {len(X_test_chunks[i])} test samples")
         print()
-    else:
-        X_test_chunks = np.array_split(X_test, size)
-    
-    y_test_chunks = np.array_split(y_test, size)
+
 else:
     X_train = None
     y_train = None
