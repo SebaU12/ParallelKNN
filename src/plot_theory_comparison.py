@@ -13,29 +13,16 @@ def load_results(filename='benchmark_strong_scaling.json'):
         data = json.load(f)
     return data
 
-
+# Modelo teórico normalizado
 def calculate_theoretical_time_normalized(m, n, d, p, t_seq, alpha=1e-5, beta=1e-8):
-    """
-    Modelo teorico normalizado:
-    T_par(p) = T_compute(p) + T_comm(p)
-    
-    T_compute(p) = (m * n * d / p) * t_op
-    donde t_op = t_seq / (m * n * d)
-    
-    T_comm(p) = alpha * log2(p) + beta * (n*d + m/p)
-    """
     t_op = t_seq / (m * n * d)
     t_compute = (m * n * d / p) * t_op
     t_comm = alpha * np.log2(max(p, 1)) + beta * (n * d + m / p)
     
     return t_compute + t_comm
 
-
+# Normaliza la expresión teorica ajustando a y B
 def normalize_theoretical_expression(results, t_seq, m, n, d):
-    """
-    Normaliza la expresion teorica ajustando alpha y beta
-    para que se aproxime a los datos experimentales
-    """
     processes = np.array([r['processes'] for r in results])
     measured_times = np.array([r['time_compute_max'] for r in results])
     
@@ -62,11 +49,8 @@ def normalize_theoretical_expression(results, t_seq, m, n, d):
     
     return alpha_opt, beta_opt
 
-
+# Gráfica tiempo teórico vs medidos
 def plot_theory_vs_practice(data, output_dir='results'):
-    """
-    Grafica comparacion entre tiempos teoricos y medidos
-    """
     results = data['results']
     t_seq = data['sequential_time']
     meta = data['metadata']
@@ -122,11 +106,8 @@ def plot_theory_vs_practice(data, output_dir='results'):
     print(f"Saved: {output_dir}/theory_vs_practice.png")
     plt.close()
 
-
+# Escalabilidad fuerte vs debil
 def plot_scalability_analysis(data, output_dir='results'):
-    """
-    Analiza escalabilidad fuerte y debil
-    """
     results = data['results']
     t_seq = data['sequential_time']
     
@@ -179,11 +160,8 @@ def plot_scalability_analysis(data, output_dir='results'):
     print(f"Saved: {output_dir}/scalability_analysis.png")
     plt.close()
 
-
+# Cantidad óptima de procesos
 def plot_optimal_processes(data, output_dir='results'):
-    """
-    Determina y visualiza la cantidad optima de procesos
-    """
     results = data['results']
     t_seq = data['sequential_time']
     
@@ -252,10 +230,8 @@ def plot_optimal_processes(data, output_dir='results'):
     print(f"  Speedup en p_opt: {speedup[optimal_idx]:.2f}x")
     print(f"  Eficiencia en p_opt: {efficiency[optimal_idx]*100:.1f}%")
 
+# Genera reporte completo con análisis teórico
 def generate_comprehensive_report(data, output_dir='results'):
-    """
-    Genera reporte completo con analisis teorico
-    """
     results = data['results']
     t_seq = data['sequential_time']
     meta = data['metadata']
